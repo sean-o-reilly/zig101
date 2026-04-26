@@ -26,7 +26,7 @@ var ball : rl.Rectangle = .{.x = screenWidth / 2, .y = screenHeight / 2, .width 
 var ballXVelo : f32 = 17.0;
 var ballYVelo : f32 = 1.0;
 
-var ballInPlay = true;
+var ballInPlay = false;
 
 var leftPlayerScore : u32 = 0;
 var rightPlayerScore : u32 = 0;
@@ -38,6 +38,8 @@ pub fn main() anyerror!void {
     defer rl.closeWindow(); // Close window and OpenGL context
 
     rl.setTargetFPS(60);
+
+    try resetBallInBackground();
 
     while (!rl.windowShouldClose()) { // Detect window close button or ESC key
         updatePaddles();
@@ -71,10 +73,8 @@ pub fn main() anyerror!void {
             else {
                 rightPlayerScore += 1;
             }
-            
-            ballInPlay = false;
-            var thread = try std.Thread.spawn(.{}, resetBall, .{});
-            thread.detach();
+
+            try resetBallInBackground();
         }
 
         rl.beginDrawing();
@@ -123,6 +123,12 @@ fn updatePaddles() void {
         leftPaddle.y += paddleMoveDistance;
         leftPaddleMoveDir = 1.0;
     }
+}
+
+fn resetBallInBackground() !void {
+    ballInPlay = false;
+    var thread = try std.Thread.spawn(.{}, resetBall, .{});
+    thread.detach();
 }
 
 fn resetBall() void {
